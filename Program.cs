@@ -1,16 +1,11 @@
-using API.Data;
-using Microsoft.EntityFrameworkCore;
+using API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
-builder.Services.AddDbContext<DataContext>(options => options.UseSqlite
-    (builder.Configuration.GetConnectionString("DefaultConnection")));
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// to make progam.cs cleaner, we can move the services to the extensions folder.
+builder.Services.AddApplicationServices(builder.Configuration);
+builder.Services.AddIdentityServices(builder.Configuration);
 
 var app = builder.Build();
 
@@ -23,8 +18,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
+ // configure the http request pipeline.
+app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
+.WithOrigins("https://localhost:4200", "http://localhost:4200"));
 app.MapControllers();
 
 app.Run();
